@@ -4,4 +4,4 @@ class ChatBot:
         pass
 
     def func(self):
-        print 'Hello world!'
+        return 'Hello world!'

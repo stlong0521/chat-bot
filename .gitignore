@@ -2,3 +2,6 @@
 bin/*
 eggs/*
 parts/*
+.installed.cfg
+.cache/*
+test/__pycache__/*
