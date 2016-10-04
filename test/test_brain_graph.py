@@ -1,5 +1,6 @@
 import pytest
 from brain_graph import BrainGraph
+from copy import deepcopy
 
 @pytest.fixture
 def brain_graph():
@@ -21,7 +22,7 @@ class TestBrainGraph:
 
     def test_write_graph_to_json(self, brain_graph):
         # Sanity test
-        graph = brain_graph.graph
+        graph = deepcopy(brain_graph.graph)
         brain_graph.write_graph_to_json("test/data/brain_graph.json")
         brain_graph.load_graph_from_json("test/data/brain_graph.json")
         assert brain_graph.graph == graph
