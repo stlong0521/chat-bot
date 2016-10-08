@@ -7,3 +7,4 @@ parts/*
 .cache/*
 test/__pycache__/*
 .coverage
+data/*.json
