@@ -1,25 +1,23 @@
 import os.path
 from brain_graph import BrainGraph
 from sentence_trie import SentenceTrie
-from utils import load_dict_from_file, write_dict_to_file
+from utils import load_dict_from_s3, write_dict_to_s3
 
 class ChatBot:
 
     def __init__(self):
         self.mode = 'talking'
         self.graph = BrainGraph()
-        if os.path.isfile('data/brain_graph.json'):
-            self.graph.graph = load_dict_from_file('data/brain_graph.json')
+        self.graph.graph = load_dict_from_s3('brain_graph.json')
         self.trie = SentenceTrie()
-        if os.path.isfile('data/sentence_trie.json'):
-            self.trie.trie = load_dict_from_file('data/sentence_trie.json')
+        self.trie.trie = load_dict_from_s3('sentence_trie.json')
 
     def interact(self):
         while True:
             sentence = raw_input('Question/Command: ')
             if sentence.lower() == 'we are done':
-                write_dict_to_file('data/brain_graph.json', self.graph.graph)
-                write_dict_to_file('data/sentence_trie.json', self.trie.trie)
+                write_dict_to_s3('brain_graph.json', self.graph.graph)
+                write_dict_to_s3('sentence_trie.json', self.trie.trie)
                 print 'Response: Bye!'
                 break
             elif sentence.lower() == 'switch to training':
