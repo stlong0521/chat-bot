@@ -14,22 +14,24 @@ class ChatBot:
 
     def interact(self):
         while True:
-            sentence = raw_input('Question/Command: ')
-            if sentence.lower() == 'we are done':
+            sentence = raw_input('Question/Command: ').lower()
+            if sentence == 'bye' or sentence == 'goodbye':
                 write_dict_to_s3('brain_graph.json', self.graph.graph)
                 write_dict_to_s3('sentence_trie.json', self.trie.trie)
                 print 'Response: Bye!'
                 break
-            elif sentence.lower() == 'switch to training':
+            if sentence == 'switch to training':
                 self.mode = 'training'
                 print 'Response: Switched to training mode!'
                 continue
-            elif sentence.lower() == 'switch to talking':
+            if sentence == 'switch to talking':
                 self.mode = 'talking'
                 print 'Response: Switched to talking mode!'
                 continue
             answer_word_dict = self.graph.find_potential_answer_words(sentence)
-            print 'Response:', self.trie.reconstruct_sentence(answer_word_dict)
+            response = self.trie.reconstruct_sentence(answer_word_dict)
+            response = response if response else 'I am not mature enough to answer this question.'
+            print 'Response:', response
             if self.mode == 'training':
                 expected_response = raw_input('Expected response: ')
                 self.graph.process_question_answer_pair(sentence, expected_response)

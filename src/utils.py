@@ -10,7 +10,7 @@ def tokenize(sentence):
 
 def tokenize_exclude_punctuation(sentence):
     word_list = []
-    for word in tokenize(sentence):
+    for word in tokenize(sentence.lower()):
         if word not in string.punctuation:
             word_list.append(word)
     return word_list

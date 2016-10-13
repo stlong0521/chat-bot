@@ -50,7 +50,7 @@ class SentenceTrie:
                 self._search_sentence_trie(answer_word_dict,
                                            curr_node[word],
                                            curr_answer_word_list,
-                                           curr_score + answer_word_dict.get(word, 0),
+                                           curr_score + answer_word_dict.get(word.lower(), 0),
                                            curr_answer_candidate,
                                            curr_answer_candidate_score)
                 curr_answer_word_list.remove(word)
