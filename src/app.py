@@ -1,6 +1,6 @@
 ''' ### Acknowledgment
 This webhook template is derived from
-[here](https://github.com/hartleybrody/fb-messenger-bot/blob/master/app.pby)
+[here](https://github.com/hartleybrody/fb-messenger-bot/blob/master/app.py)
 '''
 import os
 import sys
@@ -8,8 +8,12 @@ import json
 
 import requests
 from flask import Flask, request
+from chat_bot.chat_bot import ChatBot
+import nltk
 
 app = Flask(__name__)
+nltk.download('punkt')
+chat_bot = ChatBot()
 
 @app.route('/', methods=['GET'])
 def verify():
@@ -34,7 +38,13 @@ def webhook():
                     sender_id = messaging_event["sender"]["id"]        # the facebook ID of the person sending you the message
                     recipient_id = messaging_event["recipient"]["id"]  # the recipient's ID, which should be your page's facebook ID
                     message_text = messaging_event["message"]["text"]  # the message's text
-                    send_message(sender_id, "got it, thanks!")
+                    global chat_bot
+                    response = chat_bot.respond(message_text)
+                    if isinstance(response, tuple):
+                        for r in response:
+                            send_message(sender_id, r)
+                    else:
+                        send_message(sender_id, response)
                 if messaging_event.get("delivery"):  # delivery confirmation
                     pass
                 if messaging_event.get("optin"):  # optin confirmation

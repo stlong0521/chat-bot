@@ -16,7 +16,7 @@ def test_tokenize_exclude_punctuation():
     # Result
     result = tokenize_exclude_punctuation(sentence)
     # Expected
-    expected = ["That", "is", "n't", "a", "joke", "I", "can", "not", "believe", "it"]
+    expected = ["that", "is", "n't", "a", "joke", "i", "can", "not", "believe", "it"]
     # Assertion
     assert result == expected
 
