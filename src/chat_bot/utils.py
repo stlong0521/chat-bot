@@ -4,6 +4,7 @@ import string
 import simplejson as json
 import boto3, botocore
 import os
+import requests
 
 def tokenize(sentence):
     return word_tokenize(sentence)
@@ -25,10 +26,16 @@ def write_dict_to_file(json_file_path, dictionary):
 
 def load_dict_from_s3(file_name):
     s3_client = boto3.client('s3')
-    s3_client.download_file('ts-chat-bot', 'brains/' + file_name, 'data/' + file_name)
-    return load_dict_from_file('data/' + file_name)
+    url = s3_client.generate_presigned_url('get_object', 
+                                           Params={'Bucket': 'ts-chat-bot',
+                                                   'Key': 'brains/' + file_name}, 
+                                           ExpiresIn=30)
+    return json.loads(requests.get(url).text)
 
 def write_dict_to_s3(file_name, dictionary):
-    write_dict_to_file('data/' + file_name, dictionary)
     s3_client = boto3.client('s3')
-    s3_client.upload_file('data/' + file_name, 'ts-chat-bot', 'brains/' + file_name)
+    url = s3_client.generate_presigned_url('put_object', 
+                                           Params={'Bucket': 'ts-chat-bot',
+                                                   'Key': 'brains/' + file_name}, 
+                                           ExpiresIn=30)
+    requests.put(url, data=json.dumps(dictionary))
