@@ -14,9 +14,6 @@ class ChatBot:
         self.brain_version = ('', '')
         self.sync_memory()
 
-    def __del__(self):
-        while not self.sync_memory(): pass
-
     def interact(self):
         while True:
             sentence = raw_input('Question/Command/Expected Answer: ')
@@ -28,14 +25,9 @@ class ChatBot:
                 print 'Response:', response
 
     def respond(self, sentence):
-        if self.mode == 'learning' and self.waiting_for_answer:
-            self.waiting_for_answer = False
-            self.new_question_answer_pairs.append((self.most_recent_question, sentence))
-            self.learn(self.most_recent_question, sentence)
-            response = 'Thanks! New information learned!'
-        elif sentence.lower() == 'sync memory':
+        if sentence.lower() == 'sync memory':
             if self.sync_memory():
-                response = 'Memory synced!'
+                response = 'Memory synced with the remote brain!'
             else:
                 response = 'Someone else is syncing! You may want to try again later!'
         elif sentence.lower() == 'switch to learning':
@@ -45,15 +37,26 @@ class ChatBot:
         elif sentence.lower() == 'switch to talking':
             self.mode = 'talking'
             response = 'Switched to talking!'
+        elif self.mode == 'learning' and self.waiting_for_answer:
+            self.waiting_for_answer = False
+            if sentence.lower() == 'well done':
+                sentence = self.most_recent_answer
+            self.new_question_answer_pairs.append((self.most_recent_question, sentence))
+            self.learn(self.most_recent_question, sentence)
+            response = 'Thanks! Your feedback is recorded!'
         else:
             self.most_recent_question = sentence
-            answer_word_dict = self.graph.find_potential_answer_words(sentence)
-            answer = self.trie.reconstruct_sentence(answer_word_dict)
-            response = answer if answer else 'I am not mature enough to answer this question.'
+            response = self.answer(sentence)
+            self.most_recent_answer = response
             if self.mode == 'learning' and not self.waiting_for_answer:
-                response = (response, 'I am learning. Please tell me your expected answer.')
+                response = (response, 'Please tell me your expected answer, or say "well done" to accept my answer.')
                 self.waiting_for_answer = True
         return response
+
+    def answer(self, question):
+        answer_word_dict = self.graph.find_potential_answer_words(question)
+        answer = self.trie.reconstruct_sentence(answer_word_dict)
+        return answer if answer else 'I am not mature enough to answer this question.'
 
     def learn(self, question, answer):
         self.graph.process_question_answer_pair(question, answer)

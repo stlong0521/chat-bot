@@ -5,15 +5,48 @@ This webhook template is derived from
 import os
 import sys
 import json
-
 import requests
 from flask import Flask, request
-from chat_bot.chat_bot import ChatBot
 import nltk
+import time
+import threading
 
-app = Flask(__name__)
+from chat_bot.chat_bot import ChatBot
+
+def create_flask_app():
+    def sync_memory_and_recycle_inactive_chat_bots():
+        '''
+        Sync brain memory of local chat bots with remote and recycle inactive chat bots periodically
+        '''
+        global active_chat_bot_pool
+        global lock
+        while True:
+            with lock:
+                for sender_id, chat_bot_info in active_chat_bot_pool.items():
+                    chat_bot = chat_bot_info[0]
+                    last_active_time = chat_bot_info[1]
+                    if time.time() - last_active_time > 300:
+                        # Make sure memory sync succeed, as the chat bot will be recycled
+                        while not chat_bot.sync_memory():
+                            pass
+                        send_message(sender_id, "I went to sleep as you have not been talking to me for a while.")
+                        send_message(sender_id, "As always, you can talk to me to wake me up!")
+                        del active_chat_bot_pool[sender_id]
+                    else:
+                        # Memory sync failure is acceptable, as an active chat bot syncs memory periodically
+                        chat_bot.sync_memory()
+            time.sleep(300)
+
+    app = Flask(__name__)
+    thread = threading.Thread(target=sync_memory_and_recycle_inactive_chat_bots, args=())
+    thread.start()
+
+    return app
+
 nltk.download('punkt')
-chat_bot = ChatBot()
+active_chat_bot_pool = {} # Dev only, use memcache instead for scalability
+lock = threading.Lock()
+app = create_flask_app()
 
 @app.route('/', methods=['GET'])
 def verify():
@@ -38,7 +71,15 @@ def webhook():
                     sender_id = messaging_event["sender"]["id"]        # the facebook ID of the person sending you the message
                     recipient_id = messaging_event["recipient"]["id"]  # the recipient's ID, which should be your page's facebook ID
                     message_text = messaging_event["message"]["text"]  # the message's text
-                    global chat_bot
+                    global active_chat_bot_pool
+                    global lock
+                    with lock:
+                        if sender_id in active_chat_bot_pool:
+                            chat_bot = active_chat_bot_pool[sender_id][0]
+                        else:
+                            chat_bot = ChatBot()
+                        now = time.time()
+                        active_chat_bot_pool[sender_id] = (chat_bot, now)
                     response = chat_bot.respond(message_text)
                     if isinstance(response, tuple):
                         for r in response:
@@ -79,4 +120,4 @@ def log(message):  # simple wrapper for logging to stdout on heroku
     sys.stdout.flush()
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(debug=True, use_reloader=False)

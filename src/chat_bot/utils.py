@@ -67,8 +67,11 @@ def write_item_to_dynamo(updated_brain_version, old_brain_version):
     condition_expression = 'BrainGraphVersion = :bgv and SentenceTrieVersion = :stv'
     expression_attribute_values = {':bgv': {'S': old_brain_version[0]},
                                    ':stv': {'S': old_brain_version[1]}}
-    response = dynamo_client.put_item(TableName='brain-version',
-                                      Item=item,
-                                      ConditionExpression=condition_expression,
-                                      ExpressionAttributeValues=expression_attribute_values)
+    try:
+        response = dynamo_client.put_item(TableName='brain-version',
+                                          Item=item,
+                                          ConditionExpression=condition_expression,
+                                          ExpressionAttributeValues=expression_attribute_values)
+    except:
+        return False
     return response['ResponseMetadata']['HTTPStatusCode'] == 200
