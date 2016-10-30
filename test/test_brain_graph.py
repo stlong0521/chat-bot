@@ -1,4 +1,5 @@
 import pytest
+from copy import deepcopy
 from brain_graph import BrainGraph
 from utils import load_dict_from_file
 
@@ -10,48 +11,37 @@ def brain_graph():
 
 class TestBrainGraph:
 
-    def test_add_cell_edge(self, brain_graph):
-        # Add to an existing edge
-        brain_graph.add_cell_edge("how", "fine")
-        # Add a non-existing edge with a non-existing ending cell
-        brain_graph.add_cell_edge("how", "OK")
-        # Add a non-existing edge with a non-existing starting cell
-        brain_graph.add_cell_edge("what", "good")
-        # Add a non-existing edge with non-existing starting and ending cells
-        brain_graph.add_cell_edge("why", "because")
-        # Assertion
-        assert brain_graph.graph["how"]["fine"] == 3
-        assert brain_graph.graph["how"]["OK"] == 1
-        assert brain_graph.graph["what"]["good"] == 1
-        assert brain_graph.graph["why"]["because"] == 1
-
     def test_process_question_answer_pair(self, brain_graph):
-        question = "How are you?"
+        graph = deepcopy(brain_graph.graph)
+        question = "How are you doing?"
         answer = "I am fine."
         brain_graph.process_question_answer_pair(question, answer)
-        assert brain_graph.graph["how"]["fine"] == 3
-        assert brain_graph.graph["are"]["am"] == 5
-        assert brain_graph.graph["you"]["i"] == 7
-        assert brain_graph.graph["how"]["i"] == 1
-        assert brain_graph.graph["how"]["am"] == 1
-        assert brain_graph.graph["are"]["i"] == 1
-        assert brain_graph.graph["are"]["fine"] == 1
-        assert brain_graph.graph["you"]["am"] == 1
-        assert brain_graph.graph["you"]["fine"] == 1
-
-    def test_retrieve_most_related_word(self, brain_graph):
-        assert brain_graph.retrieve_most_related_word("when") == None
-        assert brain_graph.retrieve_most_related_word("how") == "fine"
-        assert brain_graph.retrieve_most_related_word("are") == "am"
-        assert brain_graph.retrieve_most_related_word("you") == "i"
-
-    def test_retrieve_answer_of_question(self, brain_graph):
-        question = "How are you?"
-        expected_answer_word_list = ["fine", "am", "i"]
-        assert brain_graph.retrieve_answer_of_question(question) == expected_answer_word_list
+        assert brain_graph.graph["how"]["word_cnt"] == graph["how"]["word_cnt"] + 1
+        assert brain_graph.graph["how"]["i"] == 1.0 / (graph["how"]["word_cnt"] + 1)
+        assert brain_graph.graph["how"]["am"] == 1.0 / (graph["how"]["word_cnt"] + 1)
+        assert brain_graph.graph["how"]["fine"] == (graph["how"]["fine"] * \
+                                                   graph["how"]["word_cnt"] + 1) / \
+                                                   (graph["how"]["word_cnt"] + 1)
+        assert brain_graph.graph["are"]["word_cnt"] == graph["are"]["word_cnt"] + 1
+        assert brain_graph.graph["are"]["i"] == 1.0 / (graph["are"]["word_cnt"] + 1)
+        assert brain_graph.graph["are"]["am"] == (graph["are"]["am"] * \
+                                                 graph["are"]["word_cnt"] + 1) / \
+                                                 (graph["are"]["word_cnt"] + 1)
+        assert brain_graph.graph["are"]["fine"] == 1.0 / (graph["are"]["word_cnt"] + 1)
+        assert brain_graph.graph["you"]["word_cnt"] == graph["you"]["word_cnt"] + 1
+        assert brain_graph.graph["you"]["i"] == (graph["you"]["i"] * \
+                                                graph["you"]["word_cnt"] + 1) / \
+                                                (graph["you"]["word_cnt"] + 1)
+        assert brain_graph.graph["you"]["am"] == 1.0 / (graph["you"]["word_cnt"] + 1)
+        assert brain_graph.graph["you"]["fine"] == 1.0 / (graph["you"]["word_cnt"] + 1)
+        assert brain_graph.graph["doing"]["word_cnt"] == 1
+        assert brain_graph.graph["doing"]["i"] == 1.0
+        assert brain_graph.graph["doing"]["am"] == 1.0
+        assert brain_graph.graph["doing"]["fine"] == 1.0
 
     def test_find_potential_answer_words(self, brain_graph):
-        brain_graph.add_cell_edge("how", "i")
+        brain_graph.graph["how"]["i"] = 0.1
         question = "How are you doing?"
-        expected_answer_word_dict = {"i": 7, "you": 5, "am": 4, "be": 3, "fine": 2, "good": 1}
+        expected_answer_word_dict = {"i": 1.0 - (1.0 - 0.8) * (1.0 - 0.1), "you": 0.5,
+                                     "am": 0.7, "be": 0.4, "fine": 0.7, "good": 0.9}
         assert brain_graph.find_potential_answer_words(question) == expected_answer_word_dict

@@ -1,1 +1,1 @@
-{"how": {"good": 1, "fine": 2}, "you": {"i": 6, "you": 5}, "are": {"be": 3, "am": 4}}
+{"how": {"word_cnt": 10, "good": 0.9, "fine": 0.7}, "you": {"word_cnt": 10, "i": 0.8, "you": 0.5}, "are": {"word_cnt": 10, "be": 0.4, "am": 0.7}}

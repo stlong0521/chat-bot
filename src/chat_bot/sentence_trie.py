@@ -21,7 +21,7 @@ class SentenceTrie:
     def reconstruct_sentence(self, answer_word_dict):
         curr_node = self.trie
         curr_answer_word_list = []
-        curr_score = 0
+        curr_score = 1.0
         curr_answer_candidate = []
         curr_answer_candidate_score = [0]
         self._search_sentence_trie(answer_word_dict,
@@ -41,8 +41,8 @@ class SentenceTrie:
                               curr_answer_candidate_score):
         for word in curr_node:
             if word == "sen_cnt":
-                if curr_score > curr_answer_candidate_score[0]:
-                    curr_answer_candidate_score[0] = curr_score
+                if 1.0 - curr_score > curr_answer_candidate_score[0]:
+                    curr_answer_candidate_score[0] = 1.0 - curr_score
                     del curr_answer_candidate[:]
                     curr_answer_candidate.extend(curr_answer_word_list)
             else:
@@ -50,7 +50,8 @@ class SentenceTrie:
                 self._search_sentence_trie(answer_word_dict,
                                            curr_node[word],
                                            curr_answer_word_list,
-                                           curr_score + answer_word_dict.get(word.lower(), 0),
+                                           # An epsilon is introduced here to distinguish 0.0 and 0.0 * 0.0
+                                           curr_score * (1.0 - answer_word_dict.get(word.lower(), 0) + 1e-2),
                                            curr_answer_candidate,
                                            curr_answer_candidate_score)
                 curr_answer_word_list.remove(word)

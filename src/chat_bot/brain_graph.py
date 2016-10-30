@@ -6,46 +6,32 @@ class BrainGraph:
     def __init__(self):
         self.graph = {}
 
-    def add_cell_edge(self, word_in_question, word_in_answer):
-        if word_in_question in self.graph:
-            if word_in_answer in self.graph[word_in_question]:
-                self.graph[word_in_question][word_in_answer] = self.graph[word_in_question][word_in_answer] + 1
-            else:
-                self.graph[word_in_question][word_in_answer] = 1
-        else:
-            self.graph[word_in_question] = {}
-            self.graph[word_in_question][word_in_answer] = 1
-
     def process_question_answer_pair(self, question, answer):
         question_word_list = tokenize_exclude_punctuation(question)
         answer_word_list = tokenize_exclude_punctuation(answer)
         for question_word in question_word_list:
+            if question_word not in self.graph:
+                self.graph[question_word] = {}
+                self.graph[question_word]['word_cnt'] = 0
+            question_word_cnt = self.graph[question_word]['word_cnt']
+            for answer_word in [word for word in self.graph[question_word] if word != 'word_cnt']:
+                self.graph[question_word][answer_word] *= 1.0 * question_word_cnt / (question_word_cnt + 1)
             for answer_word in answer_word_list:
-                self.add_cell_edge(question_word, answer_word)
-
-    def retrieve_most_related_word(self, word):
-        if word not in self.graph:
-            return None
-        return max(self.graph[word], key=(lambda key: self.graph[word][key]))
-
-    def retrieve_answer_of_question(self, question):
-        answer_word_list = []
-        question_word_list = tokenize_exclude_punctuation(question)
-        for question_word in question_word_list:
-            answer_word = self.retrieve_most_related_word(question_word)
-            if answer_word:
-                answer_word_list.append(answer_word)
-        return answer_word_list
+                if answer_word in self.graph[question_word]:
+                    self.graph[question_word][answer_word] = (self.graph[question_word][answer_word] * \
+                                                             (question_word_cnt + 1) + 1) / \
+                                                             (question_word_cnt + 1)
+                else:
+                    self.graph[question_word][answer_word] = 1.0 / (question_word_cnt + 1)
+            self.graph[question_word]['word_cnt'] += 1
 
     def find_potential_answer_words(self, question):
         answer_word_dict = {}
         question_word_list = tokenize_exclude_punctuation(question)
-        for question_word in question_word_list:
-            if question_word not in self.graph:
-                continue
-            for word in self.graph[question_word]:
-                if word in answer_word_dict:
-                    answer_word_dict[word] = answer_word_dict[word] + self.graph[question_word][word]
+        for question_word in [word for word in question_word_list if word in self.graph]:
+            for answer_word in [word for word in self.graph[question_word] if word != 'word_cnt']:
+                if answer_word in answer_word_dict:
+                    answer_word_dict[answer_word] *= (1.0 - self.graph[question_word][answer_word])
                 else:
-                    answer_word_dict[word] = self.graph[question_word][word]
-        return answer_word_dict
+                    answer_word_dict[answer_word] = 1.0 - self.graph[question_word][answer_word]
+        return {k: 1.0 - v for k, v in answer_word_dict.items()}
