@@ -48,6 +48,21 @@ class TestSentenceTrie:
         trie["I"]["am"]["fine"]["too"]["."]["sen_cnt"] = 1
         assert sentence_trie.trie == trie
 
+    def test_build_trie_from_sentences(self, sentence_trie):
+        trie = deepcopy(sentence_trie.trie)
+        sentences = ["What are you doing?", "I am fine too."]
+        sentence_trie.build_trie_from_sentences(sentences)
+        trie["What"] = {}
+        trie["What"]["are"] = {}
+        trie["What"]["are"]["you"] = {}
+        trie["What"]["are"]["you"]["doing"] = {}
+        trie["What"]["are"]["you"]["doing"]["?"] = {}
+        trie["What"]["are"]["you"]["doing"]["?"]["sen_cnt"] = 1
+        trie["I"]["am"]["fine"]["too"] = {}
+        trie["I"]["am"]["fine"]["too"]["."] = {}
+        trie["I"]["am"]["fine"]["too"]["."]["sen_cnt"] = 1
+        assert sentence_trie.trie == trie
+
     def test_reconstruct_sentence(self, sentence_trie):
         answer_word_dict = {"am": 0.7, "fine": 0.7, "How": 0.1, "are": 0.05, "you": 0.2}
         expected = "I am fine ."

@@ -25,9 +25,9 @@ def write_dict_to_file(json_file_path, dictionary):
     with open(json_file_path, "w") as json_file:
         json.dump(dictionary, json_file)
 
-def load_dict_from_s3(file_name, version=None):
+def load_dict_from_s3(bucket, key, version=None):
     s3_client = boto3.client('s3')
-    params={'Bucket': 'ts-chat-bot', 'Key': 'brains/' + file_name}
+    params={'Bucket': bucket, 'Key': key}
     if version:
         params['VersionId'] = version
     url = s3_client.generate_presigned_url('get_object', 
@@ -35,36 +35,36 @@ def load_dict_from_s3(file_name, version=None):
                                            ExpiresIn=30)
     return json.loads(requests.get(url).text)
 
-def write_dict_to_s3(file_name, dictionary):
+def write_dict_to_s3(bucket, key, dictionary):
     s3_client = boto3.client('s3')
     url = s3_client.generate_presigned_url('put_object', 
-                                           Params={'Bucket': 'ts-chat-bot',
-                                                   'Key': 'brains/' + file_name}, 
+                                           Params={'Bucket': bucket,
+                                                   'Key': key}, 
                                            ExpiresIn=30)
     response = requests.put(url, data=json.dumps(dictionary))
     return response.headers['x-amz-version-id']
 
-def delete_file_in_s3(file_name, version):
+def delete_file_in_s3(bucket, key, version):
     s3_client = boto3.client('s3')
-    s3_client.delete_object(Bucket='ts-chat-bot',
-                            Key='brains/' + file_name,
+    s3_client.delete_object(Bucket=bucket,
+                            Key=key,
                             VersionId=version)
 
 def load_item_from_dynamo():
     dynamo_client = boto3.client('dynamodb')
     response = dynamo_client.get_item(TableName='brain-version',
                                       Key={'Tag': {'S': 'latest'}},
-                                      ProjectionExpression='BrainGraphVersion, SentenceTrieVersion')
-    return response['Item']['BrainGraphVersion']['S'], response['Item']['SentenceTrieVersion']['S']
+                                      ProjectionExpression='WordGraphVersion, AnswerTrieVersion')
+    return response['Item']['WordGraphVersion']['S'], response['Item']['AnswerTrieVersion']['S']
 
 def write_item_to_dynamo(updated_brain_version, old_brain_version):
     dynamo_client = boto3.client('dynamodb')
     item = {'Tag': {'S': 'latest'},
-            'BrainGraphVersion': {'S': updated_brain_version[0]},
-            'SentenceTrieVersion': {'S': updated_brain_version[1]},
+            'WordGraphVersion': {'S': updated_brain_version[0]},
+            'AnswerTrieVersion': {'S': updated_brain_version[1]},
             'UpdatedTime': {'S': str(datetime.now())}
            }
-    condition_expression = 'BrainGraphVersion = :bgv and SentenceTrieVersion = :stv'
+    condition_expression = 'WordGraphVersion = :bgv and AnswerTrieVersion = :stv'
     expression_attribute_values = {':bgv': {'S': old_brain_version[0]},
                                    ':stv': {'S': old_brain_version[1]}}
     try:

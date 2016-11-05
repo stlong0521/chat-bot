@@ -1,4 +1,6 @@
 import simplejson as json
+import random
+
 from utils import tokenize
 
 class SentenceTrie:
@@ -17,6 +19,22 @@ class SentenceTrie:
             curr_node["sen_cnt"] = curr_node["sen_cnt"] + 1
         else:
             curr_node["sen_cnt"] = 1
+
+    def build_trie_from_sentences(self, sentences):
+        for sentence in sentences:
+            self.add_sentence_to_trie(sentence)
+
+    def ask_a_question(self):
+        question_word_list = []
+        curr_trie = self.trie
+        while curr_trie:
+            word = random.choice(curr_trie.keys())
+            if word == 'sen_cnt':
+                break
+            else:
+                question_word_list.append(word)
+                curr_trie = curr_trie[word]
+        return " ".join(question_word_list)
 
     def reconstruct_sentence(self, answer_word_dict):
         curr_node = self.trie
@@ -54,4 +72,4 @@ class SentenceTrie:
                                            curr_score * (1.0 - answer_word_dict.get(word.lower(), 0) + 1e-2),
                                            curr_answer_candidate,
                                            curr_answer_candidate_score)
-                curr_answer_word_list.remove(word)
+                curr_answer_word_list.pop()
