@@ -65,5 +65,5 @@ class TestSentenceTrie:
 
     def test_reconstruct_sentence(self, sentence_trie):
         answer_word_dict = {"am": 0.7, "fine": 0.7, "How": 0.1, "are": 0.05, "you": 0.2}
-        expected = "I am fine ."
+        expected = "I am fine."
         assert sentence_trie.reconstruct_sentence(answer_word_dict) == expected

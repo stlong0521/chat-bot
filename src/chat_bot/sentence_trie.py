@@ -1,7 +1,7 @@
 import simplejson as json
 import random
 
-from utils import tokenize
+from utils import tokenize, untokenize
 
 class SentenceTrie:
 
@@ -34,7 +34,7 @@ class SentenceTrie:
             else:
                 question_word_list.append(word)
                 curr_trie = curr_trie[word]
-        return " ".join(question_word_list)
+        return untokenize(question_word_list)
 
     def reconstruct_sentence(self, answer_word_dict):
         curr_node = self.trie
@@ -48,7 +48,7 @@ class SentenceTrie:
                                    curr_score,
                                    curr_answer_candidate,
                                    curr_answer_candidate_score)
-        return " ".join(curr_answer_candidate)
+        return untokenize(curr_answer_candidate)
 
     def _search_sentence_trie(self,
                               answer_word_dict,

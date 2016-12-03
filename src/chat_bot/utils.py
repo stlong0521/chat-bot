@@ -17,6 +17,12 @@ def tokenize_exclude_punctuation(sentence):
             word_list.append(word)
     return word_list
 
+def untokenize(tokens):
+    exceptions = ["n't"]
+    return "".join([" " + token if not token.startswith("'") and \
+        token not in string.punctuation and token not in exceptions \
+        else token for token in tokens]).strip()
+
 def load_dict_from_file(json_file_path):
     with open(json_file_path) as json_file:
         return json.load(json_file)

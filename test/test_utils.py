@@ -1,22 +1,32 @@
-from utils import tokenize, tokenize_exclude_punctuation, load_dict_from_file, write_dict_to_file
+from utils import tokenize, tokenize_exclude_punctuation, untokenize, load_dict_from_file, write_dict_to_file
 
 def test_tokenize():
     # Input
-    sentence = "  That isn't a joke?! I cannot believe it.  "
+    sentence = "  That's not a joke?! I cannot believe it.  "
     # Result
     result = tokenize(sentence)
     # Expected
-    expected = ["That", "is", "n't", "a", "joke", "?", "!", "I", "can", "not", "believe", "it", "."]
+    expected = ["That", "'s", "not", "a", "joke", "?", "!", "I", "can", "not", "believe", "it", "."]
     # Assertion
     assert result == expected
 
 def test_tokenize_exclude_punctuation():
     # Input
-    sentence = "  That isn't a joke?! I cannot believe it.  "
+    sentence = "  That's not a joke?! I cannot believe it.  "
     # Result
     result = tokenize_exclude_punctuation(sentence)
     # Expected
-    expected = ["that", "is", "n't", "a", "joke", "i", "can", "not", "believe", "it"]
+    expected = ["that", "'s", "not", "a", "joke", "i", "can", "not", "believe", "it"]
+    # Assertion
+    assert result == expected
+
+def test_untokenize():
+    # Input
+    tokens = ["That", "'s", "not", "a", "joke", "?", "!", "You", "are", "joking", ",", "are", "n't", "you", "?"]
+    # Result
+    result = untokenize(tokens)
+    # Expected
+    expected = "That's not a joke?! You are joking, aren't you?"
     # Assertion
     assert result == expected
 
