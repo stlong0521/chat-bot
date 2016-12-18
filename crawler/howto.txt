@@ -1,0 +1,7 @@
+# To crawl, run the command below from the path of this howto file
+scrapy crawl [spider-name] -o [path-to-save-the-results]
+
+# Interactive debug using Scrapy shell
+scrapy shell [quoted-url]
+response.css('title')
+response.xpath('//div[contains(@style, "padding-left:15px;")]/a')
