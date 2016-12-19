@@ -20,8 +20,10 @@ class FriendsScriptsSpider(scrapy.Spider):
             lines = []
             for para in response.xpath('//p').xpath('string()').extract():
                 for line in re.split(" *\n *\n *", para):
+                    line = line.strip()
                     if (line.startswith('[') and line.endswith(']') or \
-                        line.startswith('(') and line.endswith(')')):
+                        line.startswith('(') and line.endswith(')')): # Scene description
+                        lines.append({"dummy": "dummy"}) # Insert dummy to indicate scene switch
                         continue
                     line = self._clean_line(line)
                     role_and_line = re.split(": *", line, 1)
@@ -52,4 +54,4 @@ class FriendsScriptsSpider(scrapy.Spider):
                    .replace(u'\xa0', '') \
                    .replace(u'\x92', "'")
         line = re.sub(r'[^\x00-\x7F]+', ' ', line) # Any other weird characters -> space
-        return re.sub(" *[\(\[].*?[\)\]] *", " ", line) # Remove scene descriptions with brackets
+        return re.sub(" *[\(\[].*?[\)\]] *", " ", line) # Remove scene descriptions inside lines
