@@ -21,6 +21,9 @@ class BrainGraph:
                     self.graph[question_word][answer_word] = (self.graph[question_word][answer_word] * \
                                                              (question_word_cnt + 1) + 1) / \
                                                              (question_word_cnt + 1)
+                    # An answer word w_a could repeat in a sentence, but P(w_a|w_q) cannot exceed 1.0
+                    if self.graph[question_word][answer_word] > 1.0:
+                        self.graph[question_word][answer_word] = 1.0
                 else:
                     self.graph[question_word][answer_word] = 1.0 / (question_word_cnt + 1)
             self.graph[question_word]['word_cnt'] += 1
