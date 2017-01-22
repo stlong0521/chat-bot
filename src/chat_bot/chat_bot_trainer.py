@@ -29,9 +29,11 @@ class ChatBotTrainer:
         for curr in conversation:
             curr_role = curr.keys()[0]
             curr_line = curr.values()[0]
-            if curr_role.lower() == "ross" and prev_role.lower != "dummy":
+            if curr_role.lower() == "ross" and \
+                prev_role.lower() != "dummy" and prev_role.lower() != "ross":
                 self.word_graph.process_question_answer_pair(prev_line, curr_line)
                 self.answer_trie.add_sentence_to_trie(curr_line)
+            prev_role = curr_role
             prev_line = curr_line
 
     def sync_memory(self):
