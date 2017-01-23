@@ -1,5 +1,6 @@
 import simplejson as json
 import random
+import string
 
 from utils import tokenize, untokenize
 
@@ -59,8 +60,9 @@ class SentenceTrie:
                               curr_answer_candidate_score):
         for word in curr_node:
             if word == "sen_cnt":
-                if curr_score / len(curr_answer_word_list) > curr_answer_candidate_score[0]:
-                    curr_answer_candidate_score[0] = curr_score / len(curr_answer_word_list)
+                len_exclude_punctuation = len([word for word in curr_answer_word_list if word not in string.punctuation])
+                if curr_score / len_exclude_punctuation > curr_answer_candidate_score[0]:
+                    curr_answer_candidate_score[0] = curr_score / len_exclude_punctuation
                     del curr_answer_candidate[:]
                     curr_answer_candidate.extend(curr_answer_word_list)
             else:
