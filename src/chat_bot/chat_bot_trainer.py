@@ -12,12 +12,10 @@ class ChatBotTrainer:
         self.answer_trie = SentenceTrie()
 
     def learn(self):
-#        directory = "data/friends-scripts/season1"
-#        for filename in os.listdir(directory):
-#            conversation = load_dict_from_file(os.path.join(directory, filename))
-#            self.learn_from_conversation(conversation)
-        conversation = load_dict_from_file("data/friends-scripts/season1/101pilot.json")
-        self.learn_from_conversation(conversation)
+        for dirpath, dirnames, filenames in os.walk("data/friends-scripts"):
+            for filename in filenames:
+                conversation = load_dict_from_file(os.path.join(dirpath, filename))
+                self.learn_from_conversation(conversation)
         self.sync_memory()
         # For test
         write_dict_to_file("data/word_graph.json", self.word_graph.graph)
