@@ -17,6 +17,12 @@ class ChatBotTrainer:
                 conversation = load_dict_from_file(os.path.join(dirpath, filename))
                 self.learn_from_conversation(conversation)
         self.sync_memory()
+        # Clean the word graph by keeping only patterns that have repeated
+        for conn in self.word_graph.graph.values():
+            word_cnt = conn["word_cnt"]
+            for key, value in conn.items():
+                if conn[key] * word_cnt < 2 and key != "word_cnt":
+                    del conn[key]
         # For test
         write_dict_to_file("data/word_graph.json", self.word_graph.graph)
         write_dict_to_file("data/answer_trie.json", self.answer_trie.trie)
