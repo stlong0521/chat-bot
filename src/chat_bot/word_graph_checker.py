@@ -14,18 +14,20 @@ class WordGraphChecker:
 
     def check_word_graph(self):
         while True:
-            word_and_cnt = raw_input('Input (word, top x): ')
-            conn = self.get_conn(tuple(re.split(', *', word_and_cnt)))
-            print conn
+            cli_input = raw_input('Input (question word, top x | answer word): ')
+            print self.get_conn(tuple(re.split(', *', cli_input)))
 
     def get_conn(self, args):
-        word = args[0]
-        if word not in self.word_graph.graph:
-            return 'Word does not exist!'
-        if(len(args) > 1):
-            cnt = int(args[1])
+        question_word = args[0]
+        if question_word not in self.word_graph.graph:
+            return 'Question word does not exist!'
+        if len(args) > 1 and not re.compile("^[\d]+$").match(args[1]):
+            answer_word = args[1]
+            return self.word_graph.graph[question_word].get(answer_word)
+        if len(args) == 1:
+            cnt = len(self.word_graph.graph[question_word])
         else:
-            cnt = len(self.word_graph.graph[word])
-        unsorted_conn = self.word_graph.graph[word]
+            cnt = int(args[1])
+        unsorted_conn = self.word_graph.graph[question_word]
         conn = sorted(unsorted_conn.items(), key=operator.itemgetter(1), reverse=True)[:cnt]
         return '\n'.join(map(lambda x: str(x), conn))

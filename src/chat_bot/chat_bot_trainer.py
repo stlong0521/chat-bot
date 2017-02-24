@@ -12,7 +12,7 @@ class ChatBotTrainer:
         self.answer_trie = SentenceTrie()
 
     def learn(self):
-        for dirpath, dirnames, filenames in os.walk("data/friends-scripts"):
+        for dirpath, dirnames, filenames in os.walk("data/english-conversations"):
             for filename in filenames:
                 conversation = load_dict_from_file(os.path.join(dirpath, filename))
                 self.learn_from_conversation(conversation)
@@ -28,7 +28,17 @@ class ChatBotTrainer:
         write_dict_to_file("data/word_graph.json", self.word_graph.graph)
         write_dict_to_file("data/answer_trie.json", self.answer_trie.trie)
 
+    # Learn from easy conversations
     def learn_from_conversation(self, conversation):
+        prev = ""
+        for curr in conversation:
+            if prev != "Scene divider" and curr != "Scene divider":
+                self.word_graph.process_question_answer_pair(prev, curr)
+                self.answer_trie.add_sentence_to_trie(curr)
+            prev = curr
+
+    # Learn from episode lines
+    def learn_from_lines(self, conversation):
         prev_role = ""
         prev_line = ""
         for curr in conversation:
