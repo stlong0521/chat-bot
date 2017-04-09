@@ -36,17 +36,14 @@ def load_dict_from_s3(bucket, key, version=None):
     params={'Bucket': bucket, 'Key': key}
     if version:
         params['VersionId'] = version
-    url = s3_client.generate_presigned_url('get_object', 
-                                           Params=params, 
-                                           ExpiresIn=30)
+    url = s3_client.generate_presigned_url('get_object', Params=params)
     return json.loads(requests.get(url).text)
 
 def write_dict_to_s3(bucket, key, dictionary):
     s3_client = boto3.client('s3')
     url = s3_client.generate_presigned_url('put_object', 
                                            Params={'Bucket': bucket,
-                                                   'Key': key}, 
-                                           ExpiresIn=30)
+                                                   'Key': key})
     response = requests.put(url, data=json.dumps(dictionary))
     return response.headers['x-amz-version-id']
 

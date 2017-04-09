@@ -10,19 +10,15 @@ class ChatBotTrainer:
     def __init__(self):
         self.word_graph = BrainGraph()
         self.answer_trie = SentenceTrie()
+        self.question_answer_pairs = []
 
     def learn(self):
         for dirpath, dirnames, filenames in os.walk("data/english-conversations"):
             for filename in filenames:
                 conversation = load_dict_from_file(os.path.join(dirpath, filename))
                 self.learn_from_conversation(conversation)
-        # Clean the word graph by keeping only patterns that have repeated
-        for conn in self.word_graph.graph.values():
-            word_cnt = conn["word_cnt"]
-            for key, value in conn.items():
-                if conn[key] * word_cnt < 2 and key != "word_cnt":
-                    del conn[key]
         self.word_graph.adjust_word_graph()
+        self.word_graph.trim_word_graph(self.question_answer_pairs)
         self.sync_memory()
         # For test
         write_dict_to_file("data/word_graph.json", self.word_graph.graph)
@@ -35,6 +31,7 @@ class ChatBotTrainer:
             if prev != "Scene divider" and curr != "Scene divider":
                 self.word_graph.process_question_answer_pair(prev, curr)
                 self.answer_trie.add_sentence_to_trie(curr)
+                self.question_answer_pairs.append((prev, curr))
             prev = curr
 
     # Learn from episode lines

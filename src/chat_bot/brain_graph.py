@@ -1,4 +1,5 @@
 import simplejson as json
+import operator
 from utils import tokenize_exclude_punctuation
 
 class BrainGraph:
@@ -41,6 +42,27 @@ class BrainGraph:
                 # An answer word w_a could repeat in a sentence, but P(w_a|w_q) cannot exceed 1.0
                 if self.graph[question_word][answer_word] > 1.0:
                     self.graph[question_word][answer_word] = 1.0
+
+    def trim_word_graph(self, question_answer_pairs):
+        trimmed_graph = {}
+        for question, answer in question_answer_pairs:
+            relevant_edges = {}
+            question_word_list = tokenize_exclude_punctuation(question)
+            answer_word_list = tokenize_exclude_punctuation(answer)
+            for question_word in question_word_list:
+                for answer_word in answer_word_list:
+                    relevant_edges[(question_word, answer_word)] = self.graph[question_word][answer_word]
+            sorted_edges = sorted(relevant_edges.items(), key=operator.itemgetter(1), reverse=True)
+            for edge, score in sorted_edges:
+                if not question_word_list and not answer_word_list:
+                    break
+                question_word, answer_word = edge
+                if question_word not in trimmed_graph:
+                    trimmed_graph[question_word] = {}
+                trimmed_graph[question_word][answer_word] = score
+                question_word_list = [word for word in question_word_list if word != question_word]
+                answer_word_list = [word for word in answer_word_list if word != answer_word]
+        self.graph = trimmed_graph
 
     def find_potential_answer_words(self, question):
         answer_word_dict = {}
