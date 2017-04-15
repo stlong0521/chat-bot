@@ -8,7 +8,7 @@ def launch_chat_bot():
 
 def launch_chat_bot_trainer():
     my_chat_bot_trainer = ChatBotTrainer()
-    my_chat_bot_trainer.learn()
+    my_chat_bot_trainer.learn_and_validate()
 
 def launch_word_graph_checker():
     my_word_graph_checker = WordGraphChecker()

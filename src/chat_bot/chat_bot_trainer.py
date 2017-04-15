@@ -4,6 +4,7 @@ from brain_graph import BrainGraph
 from sentence_trie import SentenceTrie
 from utils import (load_dict_from_file, write_dict_to_s3, delete_file_in_s3,
                    load_item_from_dynamo, write_item_to_dynamo, write_dict_to_file)
+from chat_bot import ChatBot
 
 class ChatBotTrainer:
 
@@ -12,8 +13,8 @@ class ChatBotTrainer:
         self.answer_trie = SentenceTrie()
         self.question_answer_pairs = []
 
-    def learn(self):
-        for dirpath, dirnames, filenames in os.walk("data/english-conversations"):
+    def learn_and_validate(self):
+        for dirpath, dirnames, filenames in os.walk("data/english-conversations/smalltalk"):
             for filename in filenames:
                 conversation = load_dict_from_file(os.path.join(dirpath, filename))
                 self.learn_from_conversation(conversation)
@@ -23,6 +24,7 @@ class ChatBotTrainer:
         # For test
         write_dict_to_file("data/word_graph.json", self.word_graph.graph)
         write_dict_to_file("data/answer_trie.json", self.answer_trie.trie)
+        print "Response accuracy: {}".format(self.calc_response_accuracy())
 
     # Learn from easy conversations
     def learn_from_conversation(self, conversation):
@@ -33,6 +35,16 @@ class ChatBotTrainer:
                 self.answer_trie.add_sentence_to_trie(curr)
                 self.question_answer_pairs.append((prev, curr))
             prev = curr
+
+    # Validate the model
+    def calc_response_accuracy(self):
+        test_chat_bot = ChatBot()
+        cnt = 0
+        for question, answer in self.question_answer_pairs:
+            response = test_chat_bot.answer(question)
+            if response == answer:
+                cnt += 1
+        return 1.0 * cnt / len(self.question_answer_pairs)
 
     # Learn from episode lines
     def learn_from_lines(self, conversation):
