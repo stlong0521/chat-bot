@@ -57,6 +57,9 @@ class BrainGraph:
                 if not question_word_list and not answer_word_list:
                     break
                 question_word, answer_word = edge
+                # Skip if both question_word and answer_word have been connected by other edges
+                if question_word not in question_word_list and answer_word not in answer_word_list:
+                    continue
                 if question_word not in trimmed_graph:
                     trimmed_graph[question_word] = {}
                 trimmed_graph[question_word][answer_word] = score
