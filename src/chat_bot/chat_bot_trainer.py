@@ -14,7 +14,7 @@ class ChatBotTrainer:
         self.question_answer_pairs = []
 
     def learn_and_validate(self):
-        for dirpath, dirnames, filenames in os.walk("data/english-conversations"):
+        for dirpath, dirnames, filenames in os.walk("data/english-conversations/smalltalk"):
             for filename in filenames:
                 conversation = load_dict_from_file(os.path.join(dirpath, filename))
                 self.learn_from_conversation(conversation)
@@ -24,7 +24,7 @@ class ChatBotTrainer:
         # For test
         write_dict_to_file("data/word_graph.json", self.word_graph.graph)
         write_dict_to_file("data/answer_trie.json", self.answer_trie.trie)
-        # print "Response accuracy: {}".format(self.calc_response_accuracy())
+        print "Response accuracy: {}".format(self.calc_response_accuracy())
 
     # Learn from easy conversations
     def learn_from_conversation(self, conversation):
