@@ -1,5 +1,7 @@
 import simplejson as json
 import operator
+import math
+
 from utils import tokenize_exclude_punctuation
 
 class BrainGraph:
@@ -51,9 +53,11 @@ class BrainGraph:
             answer_word_list = tokenize_exclude_punctuation(answer)
             for question_word in question_word_list:
                 for answer_word in answer_word_list:
-                    # The score is confidence of answer_word given question_word over support of answer_word from all answers
-                    relevant_edges[(question_word, answer_word)] = self.graph[question_word][answer_word] / \
-                                                                   (1.0 * self.answer_word_cnt[answer_word] / len(question_answer_pairs))
+                    # The score is confidence (i.e., conditional probability) of answer_word given question_word
+                    # over (dampened) support (i.e., occurence probability by chance) of answer_word from all answers
+                    relevant_edges[(question_word, answer_word)] = \
+                        self.graph[question_word][answer_word] / \
+                        math.sqrt(1.0 * self.answer_word_cnt[answer_word] / len(question_answer_pairs))
             sorted_edges = sorted(relevant_edges.items(), key=operator.itemgetter(1), reverse=True)
             for edge, score in sorted_edges:
                 if not question_word_list and not answer_word_list:
@@ -63,7 +67,8 @@ class BrainGraph:
                 if question_word not in question_word_list and answer_word not in answer_word_list:
                     continue
                 # Skip if connection confidence is less than appearance of answer word by chance
-                if score < 1.0:
+                if self.graph[question_word][answer_word] < \
+                        1.0 * self.answer_word_cnt[answer_word] / len(question_answer_pairs):
                     continue
                 # Skip if the connection pattern appears only once
 #                if self.graph[question_word][answer_word] * self.graph[question_word]['word_cnt'] < 2:

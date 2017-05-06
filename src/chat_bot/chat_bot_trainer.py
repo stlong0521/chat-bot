@@ -3,7 +3,8 @@ import os
 from brain_graph import BrainGraph
 from sentence_trie import SentenceTrie
 from utils import (load_dict_from_file, write_dict_to_s3, delete_file_in_s3,
-                   load_item_from_dynamo, write_item_to_dynamo, write_dict_to_file)
+                   load_item_from_dynamo, write_item_to_dynamo, write_dict_to_file,
+                   tokenize_exclude_punctuation)
 from chat_bot import ChatBot
 
 class ChatBotTrainer:
@@ -24,7 +25,9 @@ class ChatBotTrainer:
         # For test
         write_dict_to_file("data/word_graph.json", self.word_graph.graph)
         write_dict_to_file("data/answer_trie.json", self.answer_trie.trie)
-        print "Response accuracy: {}".format(self.calc_response_accuracy())
+        print "Achieved response accuracy {} for {} questions in total".format(
+            self.calc_response_accuracy(),
+            len(self.question_answer_pairs))
 
     # Learn from easy conversations
     def learn_from_conversation(self, conversation):
@@ -45,9 +48,16 @@ class ChatBotTrainer:
             if response == answer:
                 cnt += 1
             else:
+                answer_word_dict = test_chat_bot.word_graph.find_potential_answer_words(question)
+                response_word_scores = [(word, answer_word_dict.get(word, 0.0)) for word in tokenize_exclude_punctuation(response)]
+                answer_word_scores = [(word, answer_word_dict.get(word, 0.0)) for word in tokenize_exclude_punctuation(answer)]
+                print "--------------------------------------------------------"
                 print "Question: {}".format(question)
                 print "Answer: {}".format(response)
+                print response_word_scores
                 print "Expected: {}".format(answer)
+                print answer_word_scores
+                print "--------------------------------------------------------"
         return 1.0 * cnt / len(self.question_answer_pairs)
 
     # Learn from episode lines
