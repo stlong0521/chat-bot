@@ -68,6 +68,9 @@ class SentenceTrie:
                     del curr_answer_candidate[:]
                     curr_answer_candidate.extend(curr_answer_word_list)
             else:
+                # Skip answer candidate with words connecting to no words in the question
+                if word.lower() not in answer_word_dict and word not in string.punctuation:
+                    continue
                 curr_answer_word_list.append(word)
                 self._search_sentence_trie(answer_word_dict,
                                            curr_node[word],

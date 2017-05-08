@@ -67,9 +67,9 @@ class BrainGraph:
                 if question_word not in question_word_list and answer_word not in answer_word_list:
                     continue
                 # Skip if connection confidence is less than appearance of answer word by chance
-                if self.graph[question_word][answer_word] < \
-                        1.0 * self.answer_word_cnt[answer_word] / len(question_answer_pairs):
-                    continue
+#                if self.graph[question_word][answer_word] < \
+#                        1.0 * self.answer_word_cnt[answer_word] / len(question_answer_pairs):
+#                    continue
                 # Skip if the connection pattern appears only once
 #                if self.graph[question_word][answer_word] * self.graph[question_word]['word_cnt'] < 2:
 #                    continue
